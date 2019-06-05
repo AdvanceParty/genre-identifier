@@ -8,19 +8,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import nltk
-from nltk.corpus import stopwords
-import re
-
-import tensorflow as tf
-from tensorflow import keras
-
-import keras
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten
-from keras.layers import Conv2D, MaxPooling2D
-from keras.utils import to_categorical
-from keras.preprocessing import image
 
 
 # formatting text to binary data
@@ -35,10 +22,9 @@ from sklearn.metrics import f1_score  # Performance metric
 
 from tqdm import tqdm
 
-#  NOTE: don't forget to downloasd the nltk stopwords
-#  with ```nltk.download('stopwords')```
-nltk.download('stopwords')
-stop_words = set(stopwords.words('english'))
+# local helper funcs
+from utils.funcs import infer_tags, remove_stopwords, clean_text
+
 
 # raw data and list of genres
 raw_data = 'data_raw.csv'
@@ -92,55 +78,15 @@ xtrain, xval, ytrain, yval = train_test_split(
 xtrain_tfidf = tfidf_vectorizer.fit_transform(xtrain)
 xval_tfidf = tfidf_vectorizer.transform(xval)
 
-
 # setup model to use sk-learn's OneVsRestClassifier
 # solve the problem as a 'binary relevance' or 'one-vs-all' problem
 lr = LogisticRegression()
 clf = OneVsRestClassifier(lr)
+clf.fit(xtrain_tfidf, ytrain)  # fit model on train data
 
-
-# fit model on train data
-clf.fit(xtrain_tfidf, ytrain)
-
-
-# function to remove stopwords
-def remove_stopwords(text):
-    no_stopword_text = [w for w in text.split() if not w in stop_words]
-    return ' '.join(no_stopword_text)
-
-
-# function for text cleaning
-def clean_text(text):
-    # remove backslash-apostrophe
-    text = re.sub("\'", "", text)
-    # remove everything except alphabets
-    text = re.sub("[^a-zA-Z]", " ", text)
-    # remove whitespaces
-    text = ' '.join(text.split())
-    # convert text to lowercase
-    text = text.lower()
-
-    return text
-
-
-#  clean text in the titles
-dataset['title'] = dataset['title'].apply(lambda x: clean_text(x))
-dataset['title'] = dataset['title'].apply(lambda x: remove_stopwords(x))
-
-# inference function. It will take a movie title text and follow the below steps:
-#   Clean the text
-#   Remove stopwords from the cleaned text
-#   Extract features from the text
-#   Make predictions
-#   Return the predicted movie genre tags
-
-
-def infer_tags(q):
-    # q = clean_text(q)
-    # q = remove_stopwords(q)
-    q_vec = tfidf_vectorizer.transform([q])
-    q_pred = clf.predict(q_vec)
-    return multilabel_binarizer.inverse_transform(q_pred)
+#  ----- clean text in the content if needed -------
+# dataset['title'] = dataset['title'].apply(lambda x: clean_text(x))
+# dataset['title'] = dataset['title'].apply(lambda x: remove_stopwords(x))
 
 
 # ----------- Predictions
@@ -149,23 +95,49 @@ def infer_tags(q):
 # y_pred = clf.predict(xval_tfidf)
 
 y_pred_prob = clf.predict_proba(xval_tfidf)
-t = 0.35  # threshold value
+t = 0.4  # threshold value
 y_pred = (y_pred_prob >= t).astype(int)
 performance = f1_score(yval, y_pred, average="micro")
-print(y_pred)
-
-#  run predictions on random data from the dataste
-# for i in range(5):
-#     k = xval.sample(1).index[0]
-#     print("Movie: ", dataset['title'][k])
-#     print("Predicted genre: ", infer_tags(xval[k]))
-#     print("Actual genre: ", dataset['genres'][k], "\n")
 
 
-print(f'performance: {performance}')
+def lists_have_shared_items(a, b):
+    return not set(a).isdisjoint(b)
 
-# new_title = "Hunting For Monkeys"
-# print(f'{new_title}: {infer_tags(new_title)}')
+# run predictions on random data from the dataset
+
+
+def test_model(count=5):
+    total_correct = 0
+    for i in range(count):
+        k = xval.sample(1).index[0]
+        title = dataset['title'][k]
+        genre_actual = dataset['genres'][k]
+        prediction = infer_tags(
+            xval[k],
+            clf,
+            tfidf_vectorizer,
+            multilabel_binarizer
+        )
+
+        genre_prediction = []
+        for item in prediction:
+            for sub in item:
+                genre_prediction.append(sub)
+
+        correct = lists_have_shared_items(genre_prediction, genre_actual)
+        total_correct = total_correct + 1 if correct else total_correct
+
+        print(f'--> {title} <--')
+        print(f'Prediction: {genre_prediction} (raw: {prediction})')
+        print(f'Actual: {genre_actual}')
+        print(f'Is correct: {correct} | Total correct: {total_correct}\n')
+
+    print(f'Total score: {total_correct}/{count} -- {total_correct/count}%')
+    print(f'Model Performance: {performance}')
+
+
+test_model(100)
+
 
 # not_found = []
 # key_error = []
