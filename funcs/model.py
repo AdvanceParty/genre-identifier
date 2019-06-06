@@ -52,23 +52,25 @@ def build_model(input_shape, output_shape):
     return model
 
 
-# def train(X_train, y_train, xtest, ytest, model, num_epochs=10, batch_size=64):
-#     model.compile(optimizer='adam', loss='binary_crossentropy',
-#                   metrics=['accuracy'])
-#     model.fit(X_train, y_train, epochs=10,
-#               validation_data=(xtest, ytest), batch_size=64)
+def train(model, dataset, images, output='model.ckpt', num_epochs=10, batch_size=64):
 
+    # checkpoint callback function for saving model during training
+    cp_callback = tf.keras.callbacks.ModelCheckpoint(output,
+                                                     save_weights_only=True,
+                                                     verbose=1)
+    np_images = np.array(images)
+    np_dataset = np.array(dataset)
 
-def train(model, dataset, images, num_epochs=10, batch_size=64):
-
-    X = np.array(images)
-    # y = np.array(dataset.drop(['id', 'genres', 'title', 'year', 'score', 'image'], axis = 1))
-    y = np.array(dataset)
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, random_state=42, test_size=0.1)
+    images_training, images_testing, labels_training, labels_testing = train_test_split(
+        np_images, np_dataset, random_state=42, test_size=0.1)
 
     model.compile(optimizer='adam', loss='binary_crossentropy',
                   metrics=['accuracy'])
-    model.fit(X_train, y_train, epochs=num_epochs,
-              validation_data=(X_test, y_test), batch_size=batch_size)
+    model.fit(
+        images_training,
+        labels_training,
+        epochs=num_epochs,
+        validation_data=(images_testing, labels_testing),
+        batch_size=batch_size,
+        callbacks=[cp_callback]
+    )
