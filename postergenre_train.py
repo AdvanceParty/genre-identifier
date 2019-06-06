@@ -16,19 +16,30 @@ from funcs.model import build_model, train
 csv_path = os.path.abspath('data_test.csv')
 poster_path = os.path.abspath('posters/')
 cp_path = os.path.abspath('checkpoints/cp.ckpt')
+dataframe_loadpath = os.path.abspath("prepped_dataframe.pkl")
+dataframe_savepath = os.path.abspath("model_dataframe.pkl")
+
 columns = ['id', 'title', 'year', 'score', 'genres', 'image']
 poster_w = 182
 poster_h = 268
 input_shape = (poster_h, poster_w, 3)
 
 # Load csv data and images
-dataset = load_data(csv_path, columns)
-dataset = extract_genres(dataset)
+
+
+# dataset = load_data(csv_path, columns)
+# dataset = extract_genres(dataset)
+# dataset, images = load_images(dataset, poster_path, poster_w, poster_h)
+
+dataset = pd.read_pickle(dataframe_loadpath)
+
+# dataset = load_data(csv_path, columns)
+# dataset = extract_genres(dataset)
 dataset, images = load_images(dataset, poster_path, poster_w, poster_h)
 
 # remove unneccessary columns from the data
-dataset = dataset.drop(
-    columns=['id', 'genres', 'title', 'year', 'score', 'image'])
+dataset = dataset.drop(columns=columns)
+dataset.to_pickle(dataframe_savepath)
 
 # build and train the model
 model = build_model(input_shape, dataset.shape[1])

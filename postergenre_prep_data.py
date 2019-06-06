@@ -5,7 +5,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import pickle
+
 import pandas as pd
 import seaborn as sns
 
@@ -24,9 +24,4 @@ input_shape = (poster_h, poster_w, 3)
 # Load csv data and images
 dataset = load_data(csv_path, columns)
 dataset = extract_genres(dataset)
-dataset, images = load_images(dataset, poster_path, poster_w, poster_h)
-
-# remove unneccessary columns from the data
-dataset = dataset.drop(
-    columns=['id', 'genres', 'title', 'year', 'score', 'image'])
 dataset.to_pickle('prepped_dataframe.pkl')
