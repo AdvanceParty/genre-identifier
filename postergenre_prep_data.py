@@ -5,7 +5,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-
+import nltk
 import pandas as pd
 import seaborn as sns
 
@@ -21,7 +21,23 @@ poster_w = 182
 poster_h = 268
 input_shape = (poster_h, poster_w, 3)
 
+
+def check_genres(all_genres):
+    all_genres = nltk.FreqDist(all_genres)
+    all_genres_df = pd.DataFrame(
+        {'Genre': list(all_genres.keys()), 'Count': list(all_genres.values())})
+
+    g = all_genres_df.nlargest(columns="Count", n=50)
+    plt.figure(figsize=(12, 15))
+    ax = sns.barplot(data=g, x="Count", y="Genre")
+    ax.set(ylabel='Count')
+    plt.show()
+
+
 # Load csv data and images
 dataset = load_data(csv_path, columns)
-dataset = extract_genres(dataset)
+dataset, all_genres = extract_genres(dataset)
+
+check_genres(all_genres)
+
 dataset.to_pickle('prepped_dataframe.pkl')

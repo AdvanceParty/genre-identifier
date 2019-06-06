@@ -46,6 +46,6 @@ def predict(image_path):
     # plt.show()
 
 
+predict('prediction_tests/ep1.jpg')
 predict('prediction_tests/got.jpg')
 predict('prediction_tests/rugrats.jpg')
-predict('prediction_tests/ep1.jpg')

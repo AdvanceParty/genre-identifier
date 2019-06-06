@@ -43,7 +43,7 @@ def extract_genres(dataframe):
                 #  try loooking at the rows immediately before
                 #  and after row[i] oin the data source
                 print('ERROR ' + str(i))
-    return dataset
+    return dataset, all_genres
 
 # load the images for each record
 
