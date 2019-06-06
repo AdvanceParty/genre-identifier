@@ -13,11 +13,10 @@ from funcs.data import load_data, extract_genres, load_images
 from funcs.model import build_model, train
 
 #  Settings & Config
-csv_path = os.path.abspath('data_test.csv')
 poster_path = os.path.abspath('posters/')
-cp_path = os.path.abspath('checkpoints/cp.ckpt')
-dataframe_loadpath = os.path.abspath("prepped_dataframe.pkl")
-dataframe_savepath = os.path.abspath("model_dataframe.pkl")
+checkpoint_path = os.path.abspath('checkpoints/cp.ckpt')
+dataframe_pre_training_path = os.path.abspath("dataframes/pre_training.pkl")
+dataframe_post_training_path = os.path.abspath("dataframes/post_training.pkl")
 
 columns = ['id', 'title', 'year', 'score', 'genres', 'image']
 poster_w = 182
@@ -25,22 +24,15 @@ poster_h = 268
 input_shape = (poster_h, poster_w, 3)
 
 # Load csv data and images
-
-
-# dataset = load_data(csv_path, columns)
-# dataset = extract_genres(dataset)
-# dataset, images = load_images(dataset, poster_path, poster_w, poster_h)
-
-dataset = pd.read_pickle(dataframe_loadpath)
-
-# dataset = load_data(csv_path, columns)
-# dataset = extract_genres(dataset)
+dataset = pd.read_pickle(dataframe_pre_training_path)
 dataset, images = load_images(dataset, poster_path, poster_w, poster_h)
 
 # remove unneccessary columns from the data
 dataset = dataset.drop(columns=columns)
-dataset.to_pickle(dataframe_savepath)
+
+# save modified dataframe for the prediction script to use
+dataset.to_pickle(dataframe_post_training_path)
 
 # build and train the model
 model = build_model(input_shape, dataset.shape[1])
-train(model, dataset, images, cp_path)
+train(model, dataset, images, checkpoint_path)

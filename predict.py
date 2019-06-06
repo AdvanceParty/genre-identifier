@@ -21,9 +21,9 @@ poster_h = 268
 input_shape = (poster_h, poster_w, 3)
 
 cp_path = os.path.abspath('checkpoints/cp.ckpt')
-dataframe_path = os.path.abspath("model_dataframe.pkl")
+dataframe_post_training_path = os.path.abspath("dataframes/post_training.pkl")
 
-dataset = pd.read_pickle(dataframe_path)
+dataset = pd.read_pickle(dataframe_post_training_path)
 
 model = build_model(input_shape, dataset.shape[1])
 model.load_weights(cp_path)

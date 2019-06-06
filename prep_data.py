@@ -13,13 +13,10 @@ from funcs.data import load_data, extract_genres, load_images
 from funcs.model import build_model, train
 
 #  Settings & Config
-csv_path = os.path.abspath('data_test.csv')
+csv_path = os.path.abspath('raw_data/small.csv')
 poster_path = os.path.abspath('posters/')
-cp_path = os.path.abspath('checkpoints/cp.ckpt')
+dataframe_pre_training_path = os.path.abspath("dataframes/pre_training.pkl")
 columns = ['id', 'title', 'year', 'score', 'genres', 'image']
-poster_w = 182
-poster_h = 268
-input_shape = (poster_h, poster_w, 3)
 
 
 def check_genres(all_genres):
@@ -40,4 +37,4 @@ dataset, all_genres = extract_genres(dataset)
 
 check_genres(all_genres)
 
-dataset.to_pickle('prepped_dataframe.pkl')
+dataset.to_pickle(dataframe_pre_training_path)
