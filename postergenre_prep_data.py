@@ -5,6 +5,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 import pandas as pd
 import seaborn as sns
 
@@ -28,7 +29,4 @@ dataset, images = load_images(dataset, poster_path, poster_w, poster_h)
 # remove unneccessary columns from the data
 dataset = dataset.drop(
     columns=['id', 'genres', 'title', 'year', 'score', 'image'])
-
-# build and train the model
-model = build_model(input_shape, dataset.shape[1])
-train(model, dataset, images, cp_path)
+dataset.to_pickle('prepped_dataframe.pkl')
