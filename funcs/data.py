@@ -1,7 +1,10 @@
 
 import pandas as pd
+import seaborn as sns
 from tqdm import tqdm
 from keras.preprocessing import image
+import matplotlib.pyplot as plt
+import nltk
 
 
 def load_data(fpath, columns):
@@ -16,21 +19,45 @@ def load_data(fpath, columns):
 
     return dataset.dropna()
 
+
+def check_genres(all_genres):
+    all_genres = nltk.FreqDist(all_genres)
+    all_genres_df = pd.DataFrame(
+        {'Genre': list(all_genres.keys()), 'Count': list(all_genres.values())})
+
+    g = all_genres_df.nlargest(columns="Count", n=50)
+    plt.figure(figsize=(7, 5))
+    ax = sns.barplot(data=g, x="Count", y="Genre")
+    ax.set(ylabel='Count')
+    plt.show()
+
+
 # Remove comma-delimited string of genres in each record
 # convert each records genres string into an array of genre names
 # and then build an array of genre arrays : [dataset-records][record-genres]
+def get_genres(dataframe):
+    genres = []
+    for i in dataframe['genres']:
+        if isinstance(i, str):
+            genres.append(i.split(','))
+        else:
+            genres.append(i)
+
+    return sum(genres, [])
 
 
 def extract_genres(dataframe):
-    genres = []
     dataset = dataframe[0:].copy()
-    for i in dataset['genres']:
-        genres.append(i.split(','))
 
-    dataset['genres'] = genres
+    # genres = []
+    # for i in dataset['genres']:
+    #     genres.append(i.split(','))
 
-    # array of each unique genre name found across all records
-    all_genres = sum(genres, [])
+    # dataset['genres'] = genres
+    # # array of each unique genre name found across all records
+    # all_genres = sum(genres, [])
+    all_genres = get_genres(dataset)
+
     # Insert one column for each genre into the dataset
     # And then for each record, add a value of 1 for genres the records belongs to
     # and 0 for genres it does not belong t0)

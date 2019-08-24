@@ -9,26 +9,14 @@ import nltk
 import pandas as pd
 import seaborn as sns
 
-from funcs.data import load_data, extract_genres, load_images
+from funcs.data import load_data, extract_genres, load_images, check_genres
 from funcs.model import build_model, train
 
 #  Settings & Config
-csv_path = os.path.abspath('raw_data/small.csv')
+csv_path = os.path.abspath('raw_data/full.csv')
 poster_path = os.path.abspath('posters/')
 dataframe_pre_training_path = os.path.abspath("dataframes/pre_training.pkl")
 columns = ['id', 'title', 'year', 'score', 'genres', 'image']
-
-
-def check_genres(all_genres):
-    all_genres = nltk.FreqDist(all_genres)
-    all_genres_df = pd.DataFrame(
-        {'Genre': list(all_genres.keys()), 'Count': list(all_genres.values())})
-
-    g = all_genres_df.nlargest(columns="Count", n=50)
-    plt.figure(figsize=(12, 15))
-    ax = sns.barplot(data=g, x="Count", y="Genre")
-    ax.set(ylabel='Count')
-    plt.show()
 
 
 # Load csv data and images
